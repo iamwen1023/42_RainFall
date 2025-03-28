@@ -2,8 +2,8 @@
 1. Run the Binary and Observe Behavior
 Running the binary without arguments causes a segmentation fault:
 
-```./level0
-Segmentation fault (core dumped)```
+```./level0```
+```Segmentation fault (core dumped)```
 
 We need to pass an argument to the binary to observe its behavior.
 
