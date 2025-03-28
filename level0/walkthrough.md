@@ -24,6 +24,7 @@ This will display the output no!
 4. Finding the Key Comparison: When inspecting the assembly code, look for the part where the program compares the passed argument to a constant value. Here's an example of a relevant code snippet:
 
 ```0x08048ed9 <+25>: cmp $0x1a7, %eax```
+
 ```0x08048ede <+30>: jne 0x8048f58```
 
 ```./level0 423```
