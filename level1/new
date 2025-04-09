@@ -1,0 +1,96 @@
+level1@RainFall:~$ (python -c 'import sys, struct; sys.stdout.write("A" * 76 + struct.pack("<I", 0x08048444)); sys.stdout.flush()'; cat) | ./level1
+
+Good... Wait what?
+./pass
+/bin/sh: 1: ./pass: Permission denied
+whoami
+level2
+cat /home/user/level2/.pass            
+53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
+
+
+
+
+
+📘 Buffer Overflow Exploit for RainFall Level1
+This exploit demonstrates a classic stack buffer overflow vulnerability in the level1 binary from the RainFall wargame.
+
+⚠️ Vulnerability Summary
+The level1 binary uses the unsafe gets() function.
+
+gets() does not check the size of the buffer, so a long enough input can overwrite the return address.
+
+The program contains a user-defined run() function at address 0x08048444 that calls system("/bin/sh"), granting shell access.
+
+By overflowing the buffer and overwriting the return address with the address of run(), we can make the program jump to run() instead of returning normally.
+
+🛠 Exploit Breakdown
+Here is the full command:
+
+bash
+Copier
+Modifier
+(python -c 'import sys, struct; sys.stdout.write("A" * 76 + struct.pack("<I", 0x08048444)); sys.stdout.flush()'; cat) | ./level1
+Let’s break it down step-by-step:
+
+🔸 (python -c '...'; cat) | ./level1
+This runs a Python one-liner, followed by cat, and pipes the output into ./level1.
+
+cat keeps the standard input open — this is sometimes needed if the program continues reading input after gets().
+
+🔸 'import sys, struct; ...'
+sys lets us write raw bytes to stdout.
+
+struct is used to convert an integer address into raw binary in little-endian format (required by x86 architecture).
+
+🔸 "A" * 76
+Sends 76 A characters (hex 0x41) to fill the buffer and reach the return address.
+
+The number 76 was determined by trial and error or using GDB to find where the return address starts.
+
+🔸 struct.pack("<I", 0x08048444)
+Packs the address of run() (0x08048444) into 4 bytes in little-endian format.
+
+Little-endian means the bytes are ordered least significant byte first, so this becomes \x44\x84\x04\x08.
+
+🔸 sys.stdout.write(...)
+Writes the payload ("A" * 76 + run() address) as raw binary output (no newline or encoding issues).
+
+🔸 sys.stdout.flush()
+Ensures all output is immediately sent to the program (./level1) — otherwise the buffer may not be written in time.
+
+✅ What Happens When You Run It
+The program allocates a buffer on the stack.
+
+gets() reads our input, filling the buffer.
+
+After 76 bytes, we overwrite the saved return address with the address of run().
+
+When main() returns, it jumps to run() instead of the normal exit routine.
+
+run() executes system("/bin/sh"), spawning a shell.
+
+You now have an interactive shell as the level1 user.
+
+🐚 If It Works
+You'll see a shell prompt like this:
+
+shell
+Copier
+Modifier
+$ whoami
+level1
+$ id
+uid=1011(level1) gid=1011(level1) groups=1011(level1)
+🔍 Troubleshooting
+If you get a segmentation fault, try adjusting the offset ("A" * 76) to 72, 80, or 84.
+
+Use GDB to inspect the stack:
+
+bash
+Copier
+Modifier
+gdb ./level1
+(gdb) run < <(python -c 'print("A" * 100)')
+(gdb) x/20x $esp
+
