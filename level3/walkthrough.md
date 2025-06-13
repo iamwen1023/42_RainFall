@@ -1,3 +1,8 @@
+Format String Vulnerability: 
+Using printf(buffer) directly means a user can inject format specifiers (%x, %s, etc.).
+
+Potential Exploit Path: If attacker controls buffer and global at 0x804988c, it may allow arbitrary code execution via the system() call.
+
 level3@RainFall:~$ gdb ./level3 
 GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
 Copyright (C) 2012 Free Software Foundation, Inc.
