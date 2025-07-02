@@ -25,8 +25,6 @@ This will display the output no!
 
 ```0x08048ed9 <+25>: cmp $0x1a7, %eax```
 
-```0x08048ede <+30>: jne 0x8048f58```
-
 ```./level0 423```
 
 ```cat /home/user/level1/.pass```

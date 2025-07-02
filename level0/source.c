@@ -1,44 +1,31 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdio.h>
 
-int main(int argc, char *argv[])
-{
-    char *input;
-    int egid, euid;
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        return 0;
+    }
 
-    if (argc > 1)
-    {
-        input = argv[1];
-        int value = atoi(input + 4);
+    int input = atoi(argv[1]);
 
-        if (value == 423)
-        { // 0x1a7 in decimal
-            char *str = strdup("0x80c5348");
-            if (str == NULL)
-            {
-                perror("strdup failed");
-                return 1;
-            }
-            egid = getegid();
-            euid = geteuid();
-            setresgid(egid, egid, egid);
-            setresuid(euid, euid, euid);
-            execv(str, argv);
-            free(str);
-        }
-        else
-        {
-            FILE *file = fopen("/path/to/file", "wb");
-            if (file != NULL)
-            {
-                // (gdb) x/s 0x80c5350
-                // 0x80c5350:	 "No !\n"
-                fwrite("0x80c5350", 1, 5, file);
-                fclose(file);
-            }
-        }
+    if (input == 0x1a7) {  // 0x1a7 == 423
+        char *args[] = { strdup((char *)0x80c5348), NULL }; // /bin/sh
+
+        gid_t gid = getegid();
+        uid_t uid = geteuid();
+
+        // setresgid(gid, gid, gid)
+        setresgid(gid, gid, gid);
+
+        // setresuid(uid, uid, uid)
+        setresuid(uid, uid, uid);
+        // actually the process is already running with euid=level1, due to the setuid bit
+
+        execv((char *)0x80c5348, args); // /bin/sh
+    } else {
+        fwrite((void *)0x80c5350, 1, 5, *(FILE **)stderr);  // No !\n
     }
 
     return 0;

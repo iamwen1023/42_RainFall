@@ -1,20 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-void o() {
-    system("/bin/sh");
-    _exit(1);
-}
+#include <string.h>
 
 void n() {
-    char buf[520]; // 0x208 = 520 bytes
-    fgets(buf, 0x200, stdin);  // Read up to 512 bytes from stdin
-    printf(buf);               // ⚠️ Format string vulnerability!
-    exit(1);                   
+    system("some cmd");  
 }
 
-int main() {
-    n();
+void m() {
+    puts("Nope");  
+}
+
+int main(int argc, char **argv) {
+    char *buf = malloc(0x40);                // Allocate 64 bytes
+    void (**func_ptr)() = malloc(sizeof(void (*)(void))); // Allocate space for one function pointer
+
+    *func_ptr = m;                           // Set the function pointer to point to m()
+
+    strcpy(buf, argv[1]);                    // ⚠️ Unsafe: allows overflow if argv[1] > 63 chars
+
+    (*func_ptr)();                           // Call the function via function pointer
+
     return 0;
 }

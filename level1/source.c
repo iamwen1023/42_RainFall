@@ -1,9 +1,12 @@
 #include <stdio.h>
 
-void main() {
-    char buffer[80]; // Allocate space for input
-    printf("Enter input: ");
-    fgets(buffer, sizeof(buffer), stdin); // Using fgets instead of gets for safety
+#include <stdio.h>
+
+void function() {
+    char buffer[80]; // Allocating space for the buffer
+    char *ptr = buffer + 16; // Pointer to the buffer
+
+    gets(ptr); // Reading input into the buffer
 }
 
 
@@ -11,11 +14,6 @@ void main() {
 #include <stdlib.h>
 
 void run() {
-    char *data = (char *)0x80497c0;
-    char *filename = (char *)0x8048570;
-    int size = 0x13;
-    int count = 1;
-
-    fwrite(data, size, count, filename);
-    system((char *)0x8048584);
+    fwrite("Good... Wait what?\n", 19, 1, stdout);
+	return (system("/bin/sh"));
 }

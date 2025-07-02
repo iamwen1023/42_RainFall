@@ -1,20 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdio>
 
-void o() {
-    system("/bin/sh");
-    _exit(1);
+char c[68];
+
+void m() {
+    time(NULL);
+    printf("your token is at %p\n", c);
 }
 
-void n() {
-    char buf[520]; // 0x208 = 520 bytes
-    fgets(buf, 0x200, stdin);  // Read up to 512 bytes from stdin
-    printf(buf);               // ⚠️ Format string vulnerability!
-    exit(1);                   
-}
+int main(int argc, char **argv) {
+    int *a = malloc(8);
+    a[0] = 1;
+    a[1] = malloc(8);
+    strcpy((char *)a[1], argv[1]);
 
-int main() {
-    n();
+    int *b = malloc(8);
+    b[0] = 2;
+    b[1] = malloc(8);
+    strcpy((char *)b[1], argv[2]);
+
+    FILE *f = fopen("/home/user/level8/.pass", "r"); 
+    // 0x80486e9: "/home/user/level8/.pass"
+    // 0x80486eb: "r"
+    // with x/s 0x80486e9
+    fgets(c, 68, f);
+
+    puts(c);
     return 0;
 }
