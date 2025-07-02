@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-void function() {
+void main() {
     char buffer[80]; // Allocating space for the buffer
     char *ptr = buffer + 16; // Pointer to the buffer
 
@@ -14,6 +14,12 @@ void function() {
 #include <stdlib.h>
 
 void run() {
-    fwrite("Good... Wait what?\n", 19, 1, stdout);
-	return (system("/bin/sh"));
+    char *data = (char *)0x80497c0; //""
+    char *filename = (char *)0x8048570;  //"Good... Wait what?\n"
+    int size = 0x13;
+    int count = 1;
+
+    fwrite(data, size, count, filename);
+    system("/bin/sh");
+    return;
 }
