@@ -53,6 +53,14 @@ Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac
 
 Program received signal SIGSEGV, Segmentation fault.
 0x63413563 in ?? ()
+
+0x63413563 → as ASCII chars:
+0x63 = 'c'
+0x41 = 'A'
+0x35 = '5'
+0x63 = 'c'
+So you get: 'cA5c' — but this is little-endian, so memory holds it as:
+0x63 0x35 0x41 0x63 → "c5Ac"
 'cA5c' -> "c5Ac" -> index 76
 
 🛠 Crafting the Exploit

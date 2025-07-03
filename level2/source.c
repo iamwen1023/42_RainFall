@@ -13,7 +13,7 @@ void p()
 
     if (check_value == 0xb0000000)
     {
-        printf("Some message\n"); // 0x8048620 is a placeholder for the actual message
+        printf("(%p)\n"); // 0x8048620 
         exit(1);
     }
     else

