@@ -1,89 +1,73 @@
-(gdb) disas main
-Dump of assembler code for function main:
-   0x08048521 <+0>:	push   %ebp
-   - Save the previous base pointer. Standard function prologue.
-   0x08048522 <+1>:	mov    %esp,%ebp
-   - Set up new base pointer for this stack frame.
-   0x08048524 <+3>:	and    $0xfffffff0,%esp
-   - Align the stack pointer to a 16-byte boundary, which is required by some calling conventions for performance.
-   0x08048527 <+6>:	sub    $0x20,%esp
-   - Allocate 32 bytes on the stack for local variables. (char buf[32];)
-   0x0804852a <+9>:	    movl   $0x8,(%esp)
-   0x08048531 <+16>:	call   0x80483f0 <malloc@plt>
-   0x08048536 <+21>:	mov    %eax,0x1c(%esp)
-   - (void *obj1 = malloc(8); // saved to local variable)
-   0x0804853a <+25>:	mov    0x1c(%esp),%eax
-   0x0804853e <+29>:	movl   $0x1,(%eax)
-   - *((int *)obj1) = 1; Write value 1 to *obj1
-   0x08048544 <+35>:	movl   $0x8,(%esp)
-   0x0804854b <+42>:	call   0x80483f0 <malloc@plt>
-   0x08048550 <+47>:	mov    %eax,%edx
-   0x08048552 <+49>:	mov    0x1c(%esp),%eax
-   0x08048556 <+53>:	mov    %edx,0x4(%eax)
-   - void *ptr2 = malloc(8);
-   - ((void **)obj1)[1] = ptr2;
-   0x08048559 <+56>:	movl   $0x8,(%esp)
-   0x08048560 <+63>:	call   0x80483f0 <malloc@plt>
-   0x08048565 <+68>:	mov    %eax,0x18(%esp)
+080484f4 <m>:
+ 80484f4:       55                      push   ebp
+ 80484f5:       89 e5                   mov    ebp,esp
+ 80484f7:       83 ec 18                sub    esp,0x18                       ; 24 bytes for the stack
+ 80484fa:       c7 04 24 00 00 00 00    mov    DWORD PTR [esp],0x0
+ 8048501:       e8 ca fe ff ff          call   80483d0 <time@plt>             ; time(0);
+ 8048506:       ba e0 86 04 08          mov    edx,0x80486e0                  ; "your token is at %p\n"
+ 804850b:       89 44 24 08             mov    DWORD PTR [esp+0x8],eax
+ 804850f:       c7 44 24 04 60 99 04    mov    DWORD PTR [esp+0x4],0x8049960  ; the global variable (flag)
+ 8048516:       08 
+ 8048517:       89 14 24                mov    DWORD PTR [esp],edx
+ 804851a:       e8 91 fe ff ff          call   80483b0 <printf@plt>           ; printf("your token is at %p\n", flag)
+ 804851f:       c9                      leave  
+ 8048520:       c3                      ret    
 
-   0x08048569 <+72>:	mov    0x18(%esp),%eax
-   0x0804856d <+76>:	movl   $0x2,(%eax)
-
-   0x08048573 <+82>:	movl   $0x8,(%esp)
-   0x0804857a <+89>:	call   0x80483f0 <malloc@plt>
-   0x0804857f <+94>:	mov    %eax,%edx
-   0x08048581 <+96>:	mov    0x18(%esp),%eax
-   0x08048585 <+100>:	mov    %edx,0x4(%eax)
-
-   0x08048588 <+103>:	mov    0xc(%ebp),%eax
-   0x0804858b <+106>:	add    $0x4,%eax
-   0x0804858e <+109>:	mov    (%eax),%eax
-   - char *arg1 = argv[1];
-   0x08048590 <+111>:	mov    %eax,%edx
-   0x08048592 <+113>:	mov    0x1c(%esp),%eax
-   0x08048596 <+117>:	mov    0x4(%eax),%eax
-   0x08048599 <+120>:	mov    %edx,0x4(%esp)
-   0x0804859d <+124>:	mov    %eax,(%esp)
-   0x080485a0 <+127>:	call   0x80483e0 <strcpy@plt>
-   - strcpy(((char **)obj1)[1], argv[1]);
-   0x080485a5 <+132>:	mov    0xc(%ebp),%eax
-   0x080485a8 <+135>:	add    $0x8,%eax
-   0x080485ab <+138>:	mov    (%eax),%eax
-   - char *arg2 = argv[2];
-   0x080485ad <+140>:	mov    %eax,%edx
-   0x080485af <+142>:	mov    0x18(%esp),%eax
-   0x080485b3 <+146>:	mov    0x4(%eax),%eax
-   0x080485b6 <+149>:	mov    %edx,0x4(%esp)
-   0x080485ba <+153>:	mov    %eax,(%esp)
-   0x080485bd <+156>:	call   0x80483e0 <strcpy@plt>
-   - strcpy(((char **)obj2)[1], argv[2]);
-   0x080485c2 <+161>:	mov    $0x80486e9,%edx  // "/home/user/level8/.pass"
-   0x080485c7 <+166>:	mov    $0x80486eb,%eax  //  r
-   0x080485cc <+171>:	mov    %edx,0x4(%esp)
-   0x080485d0 <+175>:	mov    %eax,(%esp)
-   0x080485d3 <+178>:	call   0x8048430 <fopen@plt>
-   0x080485d8 <+183>:	mov    %eax,0x8(%esp)    // 第三個參數：f (FILE *)
-   0x080485dc <+187>:	movl   $0x44,0x4(%esp)   // 第二個參數：68
-   0x080485e4 <+195>:	movl   $0x8049960,(%esp) // 第一個參數：c (char *)
-   0x080485eb <+202>:	call   0x80483c0 <fgets@plt>
-   0x080485f0 <+207>:	movl   $0x8048703,(%esp)
-   0x080485f7 <+214>:	call   0x8048400 <puts@plt>
-   0x080485fc <+219>:	mov    $0x0,%eax
-   0x08048601 <+224>:	leave  
-   0x08048602 <+225>:	ret    
-End of assembler dump.
-(gdb) disas m
-Dump of assembler code for function m:
-   0x080484f4 <+0>:	push   %ebp
-   0x080484f5 <+1>:	mov    %esp,%ebp
-   0x080484f7 <+3>:	sub    $0x18,%esp
-   0x080484fa <+6>:	movl   $0x0,(%esp)
-   0x08048501 <+13>:	call   0x80483d0 <time@plt>
-   0x08048506 <+18>:	mov    $0x80486e0,%edx
-   0x0804850b <+23>:	mov    %eax,0x8(%esp)
-   0x0804850f <+27>:	movl   $0x8049960,0x4(%esp)
-   0x08048517 <+35>:	mov    %edx,(%esp)
-   0x0804851a <+38>:	call   0x80483b0 <printf@plt>
-   0x0804851f <+43>:	leave  
-   0x08048520 <+44>:	ret    
-End of assembler dump.
+08048521 <main>:
+ 8048521:       55                      push   ebp
+ 8048522:       89 e5                   mov    ebp,esp
+ 8048524:       83 e4 f0                and    esp,0xfffffff0                 ; Align the stack pointer to a 16-byte boundary
+ 8048527:       83 ec 20                sub    esp,0x20                       ; Keep 32 bytes for the stack
+ 804852a:       c7 04 24 08 00 00 00    mov    DWORD PTR [esp],0x8
+ 8048531:       e8 ba fe ff ff          call   80483f0 <malloc@plt>           ; int *a = malloc(8);
+ 8048536:       89 44 24 1c             mov    DWORD PTR [esp+0x1c],eax
+ 804853a:       8b 44 24 1c             mov    eax,DWORD PTR [esp+0x1c]
+ 804853e:       c7 00 01 00 00 00       mov    DWORD PTR [eax],0x1            ; *a = 1;
+ 8048544:       c7 04 24 08 00 00 00    mov    DWORD PTR [esp],0x8
+ 804854b:       e8 a0 fe ff ff          call   80483f0 <malloc@plt>
+ 8048550:       89 c2                   mov    edx,eax
+ 8048552:       8b 44 24 1c             mov    eax,DWORD PTR [esp+0x1c]
+ 8048556:       89 50 04                mov    DWORD PTR [eax+0x4],edx        ; *(a + 1) = malloc(8);
+ 8048559:       c7 04 24 08 00 00 00    mov    DWORD PTR [esp],0x8
+ 8048560:       e8 8b fe ff ff          call   80483f0 <malloc@plt>           ; int *b = malloc(8);
+ 8048565:       89 44 24 18             mov    DWORD PTR [esp+0x18],eax
+ 8048569:       8b 44 24 18             mov    eax,DWORD PTR [esp+0x18]
+ 804856d:       c7 00 02 00 00 00       mov    DWORD PTR [eax],0x2            ; *b = 2;
+ 8048573:       c7 04 24 08 00 00 00    mov    DWORD PTR [esp],0x8
+ 804857a:       e8 71 fe ff ff          call   80483f0 <malloc@plt>
+ 804857f:       89 c2                   mov    edx,eax
+ 8048581:       8b 44 24 18             mov    eax,DWORD PTR [esp+0x18]
+ 8048585:       89 50 04                mov    DWORD PTR [eax+0x4],edx        ; *(b + 1) = malloc(8);
+ 8048588:       8b 45 0c                mov    eax,DWORD PTR [ebp+0xc]        ; argv
+ 804858b:       83 c0 04                add    eax,0x4
+ 804858e:       8b 00                   mov    eax,DWORD PTR [eax]            ; argv[1]
+ 8048590:       89 c2                   mov    edx,eax
+ 8048592:       8b 44 24 1c             mov    eax,DWORD PTR [esp+0x1c]
+ 8048596:       8b 40 04                mov    eax,DWORD PTR [eax+0x4]        ; a[1]
+ 8048599:       89 54 24 04             mov    DWORD PTR [esp+0x4],edx
+ 804859d:       89 04 24                mov    DWORD PTR [esp],eax
+ 80485a0:       e8 3b fe ff ff          call   80483e0 <strcpy@plt>           ; strcpy(a[1], argv[1]);
+ 80485a5:       8b 45 0c                mov    eax,DWORD PTR [ebp+0xc]
+ 80485a8:       83 c0 08                add    eax,0x8
+ 80485ab:       8b 00                   mov    eax,DWORD PTR [eax]            ; argv[2]
+ 80485ad:       89 c2                   mov    edx,eax
+ 80485af:       8b 44 24 18             mov    eax,DWORD PTR [esp+0x18]
+ 80485b3:       8b 40 04                mov    eax,DWORD PTR [eax+0x4]        ; b[1]
+ 80485b6:       89 54 24 04             mov    DWORD PTR [esp+0x4],edx
+ 80485ba:       89 04 24                mov    DWORD PTR [esp],eax
+ 80485bd:       e8 1e fe ff ff          call   80483e0 <strcpy@plt>           ; strcpy(b[1], argv[2])
+ 80485c2:       ba e9 86 04 08          mov    edx,0x80486e9                  ; "/home/user/level8/.pass"
+ 80485c7:       b8 eb 86 04 08          mov    eax,0x80486eb                  ; "r"
+ 80485cc:       89 54 24 04             mov    DWORD PTR [esp+0x4],edx
+ 80485d0:       89 04 24                mov    DWORD PTR [esp],eax
+ 80485d3:       e8 58 fe ff ff          call   8048430 <fopen@plt>            ; FILE *file = fopen("r", 0x80486e9);
+ 80485d8:       89 44 24 08             mov    DWORD PTR [esp+0x8],eax
+ 80485dc:       c7 44 24 04 44 00 00    mov    DWORD PTR [esp+0x4],0x44
+ 80485e3:       00 
+ 80485e4:       c7 04 24 60 99 04 08    mov    DWORD PTR [esp],0x8049960      ; global char * variable
+ 80485eb:       e8 d0 fd ff ff          call   80483c0 <fgets@plt>            ; fgets(0x8049960, 0x44, file);
+ 80485f0:       c7 04 24 03 87 04 08    mov    DWORD PTR [esp],0x8048703      ; "~~"
+ 80485f7:       e8 04 fe ff ff          call   8048400 <puts@plt>             ; puts("~~")
+ 80485fc:       b8 00 00 00 00          mov    eax,0x0
+ 8048601:       c9                      leave  
+ 8048602:       c3                      ret                                   ; return (0);
