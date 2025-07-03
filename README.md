@@ -172,7 +172,7 @@ Restrict device access permissions to prevent unauthorized use.
 
 check if a system (or a program’s data) is little-endian or big-endian
 
-```
+```sh
 python -c "import sys; print(sys.byteorder)"
 ```
 
@@ -181,7 +181,7 @@ Little-endian means bytes are reversed:
 struct.pack("<I", addr) packs the address correctly for little-endian.
 You can just remember that struct.pack("<I", 0x08048444) is equivalent to the byte string \x44\x84\x04\x08.
 
-
+```py
 def generate_pattern(length):
     pattern = []
     for i in range(length):
@@ -215,3 +215,4 @@ if __name__ == "__main__":
         print(f"Offset found at: {offset}")
     else:
         print("Subpattern not found!")
+```
