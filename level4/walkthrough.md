@@ -24,6 +24,11 @@ We can use %16930116d to pad the output to 16930116 characters, then use %12$n t
 
 But we already wrote 4 bytes to insert the address of m at the beginning of the input — so we subtract 4: 16930116 - 4 = 16930112
 
+for exemple: 
+int count = 0;
+printf("AAAA%16d%n\n", 0, &count); 
+it Prints 16 characters (AAAA + 12 spaces + '0'), then uses %n to write the total number of characters printed into 'count'
+
 4. Final payload
 
 ```

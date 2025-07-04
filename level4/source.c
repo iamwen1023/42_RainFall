@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *getshell = "/bin/cat flag";
+
 int target = 0;  // this maps to 0x08049810
 
 void p(char *input) {
-    printf(input);  // ✅ VULNERABLE: no format string!
+    printf(input);  // VULNERABLE: no format string!
 }
 
 void n() {
@@ -14,8 +14,8 @@ void n() {
     fgets(buf, 512, stdin);  // 0x200 = 512
     p(buf);
 
-    if (target == 0x01025544) {
-        system(getshell);
+    if (target == 0x01025544) { //16930116
+        system("/bin/cat /home/user/level5/.pass");
     }
 }
 

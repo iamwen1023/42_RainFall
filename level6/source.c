@@ -3,7 +3,7 @@
 #include <string.h>
 
 void n() {
-    system("some cmd");  
+    system("/bin/cat /home/user/level7/.pass"); 
 }
 
 void m() {
@@ -11,10 +11,15 @@ void m() {
 }
 
 int main(int argc, char **argv) {
-    char *buf = malloc(0x40);                // Allocate 64 bytes
-    void (**func_ptr)() = malloc(sizeof(void (*)(void))); // Allocate space for one function pointer
+    // char *buf = malloc(0x40);                // Allocate 64 bytes
+    // void (**func_ptr)() = malloc(sizeof(void (*)(void))); // Allocate space for one function pointer
+    char		*buf;
+	func_ptr	*func;
 
-    *func_ptr = m;                           // Set the function pointer to point to m()
+	buf = malloc(64);
+	func = malloc(4);
+
+    *func = m;                           // Set the function pointer to point to m()
 
     strcpy(buf, argv[1]);                    // ⚠️ Unsafe: allows overflow if argv[1] > 63 chars
 
