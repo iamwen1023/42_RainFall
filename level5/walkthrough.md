@@ -2,8 +2,8 @@ The binary reads user input, prints it with printf, and eventually calls exit().
 
 Step 1: Understand the Functions
 There is a hidden function o() that runs system("/bin/sh"):
-
 0x080484a4 <o>:  call 0x80483b0 <system@plt>
+
 This function is not called normally, but we want to execute it. How?
 
 The function exit() is called at the end of execution. If we overwrite the GOT entry of exit() with the address of o(), then when exit() is called, it will jump into o() and give us a shell!
